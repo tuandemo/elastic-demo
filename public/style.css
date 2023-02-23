@@ -1,0 +1,17 @@
+body {
+    margin: 30px;
+}
+
+body * {
+    font-size: 150%;
+    margin: 10px;
+}
+
+input[type=text] {
+    padding: 10px;
+}
+
+.bn {
+    font-size: 200%;
+    color: red;
+}

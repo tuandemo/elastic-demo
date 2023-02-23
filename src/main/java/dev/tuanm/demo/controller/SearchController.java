@@ -5,10 +5,7 @@ import dev.tuanm.demo.dto.response.SearchResponse;
 import dev.tuanm.demo.service.SearchService;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Pageable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotNull;
 import java.util.List;
@@ -22,6 +19,7 @@ public class SearchController {
         this.context = context;
     }
 
+    @CrossOrigin
     @PostMapping("search")
     public List<SearchResponse> search(
             @RequestParam(required = false) String elastic,
