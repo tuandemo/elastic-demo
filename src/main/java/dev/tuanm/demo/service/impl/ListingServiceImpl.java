@@ -7,6 +7,7 @@ import dev.tuanm.demo.dto.response.ListingResponse;
 import dev.tuanm.demo.repository.SearchRepository;
 import dev.tuanm.demo.repository.ListingRepository;
 import dev.tuanm.demo.service.ListingService;
+import lombok.extern.log4j.Log4j2;
 import org.joda.time.LocalDateTime;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
@@ -16,7 +17,9 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
+@Log4j2
 @Service
 public class ListingServiceImpl implements ListingService {
     private final ListingRepository listingRepository;
@@ -35,6 +38,7 @@ public class ListingServiceImpl implements ListingService {
     @Transactional
     @Override
     public ListingResponse create(ListingRequest request) {
+        // TODO: Ensure the requested bicycle exists in the database before creating a new item.
         Item item = new Item();
         item.setBicycleId(request.getBicycleId());
         item.setDescription(request.getDescription());
@@ -42,7 +46,7 @@ public class ListingServiceImpl implements ListingService {
         item.setListedAt(LocalDateTime.now());
         return this.searchRepository.findByItemId(this.listingRepository.save(item).getId())
                 .map(saved -> {
-                    this.index(saved);
+                    CompletableFuture.runAsync(() -> this.index(saved));
                     ListingResponse response = new ListingResponse();
                     response.setId(saved.getItemId());
                     response.setListedAt(saved.getListedAt());
@@ -63,15 +67,19 @@ public class ListingServiceImpl implements ListingService {
                     item.setModelName(aggregationItem.getModelName());
                     item.setDescription(aggregationItem.getDescription());
                     item.setPrice(aggregationItem.getPrice());
-                    item.setListedAt(aggregationItem.getListedAt());
+                    item.setListedAt(aggregationItem.getListedAt().toDateTime().getMillis());
                     return item;
                 })
                 .ifPresent(item -> {
-                    IndexQuery indexQuery = new IndexQueryBuilder()
+                    try {
+                        IndexQuery indexQuery = new IndexQueryBuilder()
                             .withId(item.getId().toString())
                             .withObject(item)
                             .build();
-                    this.elasticsearchOperations.index(indexQuery, IndexCoordinates.of("bbb"));
+                        this.elasticsearchOperations.index(indexQuery, IndexCoordinates.of("bbb"));
+                    } catch (Exception ex) {
+                        log.warn(ex.getMessage());
+                    }
                 });
     }
 }

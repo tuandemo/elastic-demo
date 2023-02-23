@@ -2,6 +2,7 @@ logging:
   level:
     root: INFO
     dev.tuanm.demo: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 
 elastic:
   url: localhost:9200

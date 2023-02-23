@@ -2,6 +2,7 @@ package dev.tuanm.demo.repository;
 
 import dev.tuanm.demo.dao.entity.Item;
 import dev.tuanm.demo.dao.projection.AggregationItem;
+import org.joda.time.LocalDateTime;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -39,7 +40,7 @@ public interface SearchRepository extends JpaRepository<Item, Long> {
             Pageable page,
             String query,
             Double startPrice, Double endPrice,
-            String startDate, String endDate
+            LocalDateTime startDate, LocalDateTime endDate
     );
 
     @Query(value = " SELECT " +
@@ -60,6 +61,10 @@ public interface SearchRepository extends JpaRepository<Item, Long> {
             "   i.id = :#{#itemId} " +
             " ORDER BY i.listedAt DESC ")
     List<AggregationItem> findByItemId(Pageable page, Long itemId);
+
+    default List<AggregationItem> all() {
+        return this.search(null, null, null, null, null, null);
+    }
 
     default Optional<AggregationItem> findByItemId(Long itemId) {
         return this.findByItemId(PageRequest.of(0, 1), itemId)

@@ -28,5 +28,5 @@ public class Item {
     @Field(type = FieldType.Double)
     private double price;
     @Field(type = FieldType.Date)
-    private LocalDateTime listedAt;
+    private Long listedAt;
 }
